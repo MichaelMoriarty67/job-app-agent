@@ -1,3 +1,7 @@
+import base64
+import subprocess
+from pathlib import Path
+from uuid import uuid4
 import pyautogui
 import keyboard
 
@@ -38,5 +42,17 @@ class ComputerUseAction:
             print("Don't have this action coded yet")
 
     def _finish_action(self):
-        screenshot = pyautogui.screenshot()
+        screenshot = self._take_screenshot()
         self.result = screenshot
+
+    def _take_screenshot(self) -> str:
+        """Takes a screenshot and returns the base64-encoded image."""
+        screenshot_path = Path(f"/tmp/screenshot_{uuid4().hex}.png")
+
+        # Use macOS built-in screencapture utility
+        # -C flag captures cursor in image as well
+        subprocess.run(["screencapture", "-x", "-C", str(screenshot_path)], check=True)
+
+        # Read and encode the image in base64
+        with open(screenshot_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()

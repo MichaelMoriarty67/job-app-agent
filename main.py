@@ -14,10 +14,9 @@ client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 # starting screenshot
 starting_action = ComputerUseAction("screenshot")
 starting_action.run_action()
-og_screenshot = starting_action.result
+action_result_img_b64 = starting_action.result
 
 in_progress = True
-action_result_img_b64 = pil_to_b64(og_screenshot)
 messages = [
     {
         "role": "user",
@@ -83,10 +82,8 @@ while in_progress:
             next_action = ComputerUseAction(action=action, **kwargs)
             next_action.run_action()
 
-            action_result_img_b64 = pil_to_b64(next_action.result)
-
             with open("last_img.txt", "w") as f:
-                f.write(action_result_img_b64)
+                f.write(next_action.result)
 
             next_user_message = {"role": "user", "content": []}
             tool_use_result_block = {
@@ -95,7 +92,7 @@ while in_progress:
                 "content": [
                     {
                         "source": {
-                            "data": action_result_img_b64,
+                            "data": next_action.result,
                             "media_type": "image/png",
                             "type": "base64",
                         },
